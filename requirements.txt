@@ -1,9 +1,11 @@
+# MindCore Requirements
+# Note: Python 3.12 or 3.13 recommended for best compatibility
+# Python 3.14 is very new and many packages still have upper bounds <3.14
+
 langgraph>=0.2.0
 langchain>=0.3.0
 langchain-community>=0.3.0
 langchain-ollama>=0.2.0
-crewai>=0.80.0
-crewai-tools>=0.15.0
 gradio>=4.44.0
 chromadb>=0.5.0
 python-dotenv>=1.0.0
@@ -12,3 +14,8 @@ tiktoken>=0.7.0
 httpx>=0.27.0
 aiohttp>=3.10.0
 rich>=13.0.0
+
+# CrewAI temporarily removed because it requires Python <3.14
+# We will add it later when we use Python 3.12/3.13 or when CrewAI supports 3.14
+# crewai
+# crewai-tools
