@@ -1,9 +1,7 @@
 """
-MindCore - Advanced Multi-Agent Cognitive System
-Entry Point
+MindCore - Elite Cognitive System
 """
 
-import os
 from dotenv import load_dotenv
 from rich.console import Console
 from ui.app import create_ui
@@ -12,12 +10,10 @@ load_dotenv()
 console = Console()
 
 def main():
-    console.print("[bold cyan]🧠 MindCore v0.1[/bold cyan]")
-    console.print("[green]Multi-Agent Cognitive System is starting...[/green]")
-    console.print("Agents: Planner → Researcher → Final Synthesizer")
-    console.print("LLM: Ollama (llama3.2)")
-    console.print("UI: Gradio on http://127.0.0.1:7860")
-    console.print("-" * 50)
+    console.print("[bold magenta]🧠 MindCore v0.2[/bold magenta]")
+    console.print("[green]Fast Cognitive System ready[/green]")
+    console.print("Open → http://127.0.0.1:7860")
+    console.print("-" * 40)
     
     demo = create_ui()
     demo.launch(
