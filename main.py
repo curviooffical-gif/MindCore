@@ -1,23 +1,31 @@
 """
-MindCore - Entry Point
-Advanced Multi-Agent Cognitive System
+MindCore - Advanced Multi-Agent Cognitive System
+Entry Point
 """
 
 import os
 from dotenv import load_dotenv
 from rich.console import Console
+from ui.app import create_ui
 
 load_dotenv()
 console = Console()
 
 def main():
-    console.print("[bold cyan]MindCore v0.1[/bold cyan] - Multi-Agent Cognitive System")
-    console.print("Status: Day 1 - Foundation ready")
-    console.print("\nNext steps:")
-    console.print("1. Install dependencies: pip install -r requirements.txt")
-    console.print("2. Install Ollama and pull a model")
-    console.print("3. We will build agents, graph, and UI step by step")
-    console.print("\nRepo: https://github.com/curviooffical-gif/MindCore")
+    console.print("[bold cyan]🧠 MindCore v0.1[/bold cyan]")
+    console.print("[green]Multi-Agent Cognitive System is starting...[/green]")
+    console.print("Agents: Planner → Researcher → Final Synthesizer")
+    console.print("LLM: Ollama (llama3.2)")
+    console.print("UI: Gradio on http://127.0.0.1:7860")
+    console.print("-" * 50)
+    
+    demo = create_ui()
+    demo.launch(
+        server_name="127.0.0.1",
+        server_port=7860,
+        share=False,
+        show_error=True
+    )
 
 if __name__ == "__main__":
     main()
