@@ -1,83 +1,136 @@
 import gradio as gr
 from core.graph import build_mind_graph
 from langchain_core.messages import HumanMessage
-from rich.console import Console
+import time
 
-console = Console()
 mind = build_mind_graph()
 
 def run_mind(goal: str, history: list):
-    if not goal.strip():
-        return history, "Please enter a goal."
+    if not goal or not goal.strip():
+        return history, ""
     
-    # Initial state
+    history = history or []
+    
+    # Show thinking state immediately
+    history.append((goal, "🧠 *MindCore is thinking...*"))
+    yield history, ""
+    
     initial_state = {
         "messages": [HumanMessage(content=goal)],
-        "goal": goal,
+        "goal": goal.strip(),
         "plan": [],
         "current_step": 0,
         "research_notes": [],
         "final_answer": None,
-        "status": "planning"
+        "status": "thinking"
     }
     
     try:
+        start = time.time()
         result = mind.invoke(initial_state)
-        answer = result.get("final_answer", "No answer generated.")
-        plan = result.get("plan", [])
+        elapsed = time.time() - start
         
-        # Format nice response
-        plan_text = "\n".join([f"{i+1}. {s}" for i, s in enumerate(plan)]) if plan else "No plan"
-        full_response = f"**Goal:** {goal}\n\n**Plan Created:**\n{plan_text}\n\n---\n\n**Final Answer:**\n{answer}"
+        answer = result.get("final_answer", "No response generated.")
         
-        history.append((goal, full_response))
-        return history, ""
+        # Replace the thinking message with real answer
+        history[-1] = (goal, answer + f"\n\n---\n*Responded in {elapsed:.1f}s*")
+        yield history, ""
+        
     except Exception as e:
-        error_msg = f"Error: {str(e)}"
-        history.append((goal, error_msg))
-        return history, ""
+        history[-1] = (goal, f"❌ Error: {str(e)}")
+        yield history, ""
 
 def create_ui():
+    custom_css = """
+    .gradio-container {
+        max-width: 860px !important;
+        margin: auto !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    }
+    .main-title {
+        text-align: center;
+        margin-bottom: 8px !important;
+    }
+    .subtitle {
+        text-align: center;
+        color: #64748b;
+        font-size: 1.05rem;
+        margin-bottom: 24px !important;
+    }
+    footer {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 20px;
+    }
+    """
+    
     with gr.Blocks(
-        title="MindCore - Advanced Cognitive System",
-        theme=gr.themes.Soft(primary_hue="indigo", secondary_hue="slate"),
-        css="""
-        .gradio-container { max-width: 900px !important; }
-        .chatbot { min-height: 500px; }
-        """
+        title="MindCore",
+        theme=gr.themes.Soft(
+            primary_hue="violet",
+            secondary_hue="slate",
+            neutral_hue="slate",
+            font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"]
+        ),
+        css=custom_css
     ) as demo:
-        gr.Markdown("""
-        # 🧠 MindCore
-        **Advanced Multi-Agent Cognitive System**  
-        Enter any goal and watch the mind plan → research → answer.
+        
+        gr.HTML("""
+        <div class="main-title">
+            <h1 style="font-size: 2.4rem; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
+                🧠 MindCore
+            </h1>
+        </div>
+        <p class="subtitle">Elite Cognitive System • Fast • Local • Private</p>
         """)
         
         chatbot = gr.Chatbot(
-            label="MindCore Conversation",
-            height=500,
-            show_label=True,
-            avatar_images=(None, "🧠")
+            height=520,
+            show_label=False,
+            container=True,
+            bubble_full_width=False,
+            avatar_images=(
+                None,
+                "https://api.dicebear.com/7.x/bottts/svg?seed=MindCore&backgroundColor=7c3aed"
+            )
         )
         
-        with gr.Row():
+        with gr.Row(equal_height=True):
             txt = gr.Textbox(
-                placeholder="Example: Explain how to build a powerful AI agent system step by step",
-                label="Your Goal",
-                scale=4,
-                lines=2
+                placeholder="Ask anything... (e.g. Design a complete multi-agent architecture)",
+                show_label=False,
+                container=False,
+                scale=6,
+                lines=2,
+                max_lines=4
             )
-            btn = gr.Button("Run MindCore", variant="primary", scale=1)
+            submit_btn = gr.Button("Send", variant="primary", scale=1, min_width=100)
         
-        clear = gr.Button("Clear Chat")
+        with gr.Row():
+            clear_btn = gr.Button("Clear", variant="secondary", size="sm")
+            gr.HTML("<div style='flex:1'></div>")
+            gr.HTML("<span style='color:#94a3b8;font-size:0.8rem;align-self:center;'>Powered by llama3.2 • Local</span>")
         
-        btn.click(fn=run_mind, inputs=[txt, chatbot], outputs=[chatbot, txt])
-        txt.submit(fn=run_mind, inputs=[txt, chatbot], outputs=[chatbot, txt])
-        clear.click(lambda: ([], ""), outputs=[chatbot, txt])
+        # Events
+        submit_btn.click(
+            fn=run_mind,
+            inputs=[txt, chatbot],
+            outputs=[chatbot, txt],
+            show_progress="full"
+        )
+        txt.submit(
+            fn=run_mind,
+            inputs=[txt, chatbot],
+            outputs=[chatbot, txt],
+            show_progress="full"
+        )
+        clear_btn.click(lambda: ([], ""), outputs=[chatbot, txt])
         
-        gr.Markdown("""
-        ---
-        **Status:** Day 1 Foundation | Powered by LangGraph + Ollama (llama3.2)  
-        Agents: Planner → Researcher → Final Synthesizer
+        gr.HTML("""
+        <div class="footer">
+            MindCore v0.2 • Production Foundation • Built for speed & clarity
+        </div>
         """)
     
     return demo
